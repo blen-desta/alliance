@@ -34,7 +34,6 @@ import org.codice.alliance.nsili.endpoint.managers.EmailConfiguration;
 import org.codice.alliance.nsili.orb.api.CorbaOrb;
 import org.codice.alliance.nsili.orb.api.CorbaServiceListener;
 import org.codice.ddf.security.common.Security;
-import org.codice.ddf.security.handler.api.GuestAuthenticationToken;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.PortableServer.POA;
@@ -421,7 +420,7 @@ public class NsiliEndpoint implements CorbaServiceListener, QuerySources {
   }
 
   public static synchronized Subject getGuestSubject() throws SecurityServiceException {
-    if (guestSubject == null || Security.getInstance().tokenAboutToExpire(guestSubject)) {
+    if (guestSubject == null) {
 
       String ip = DEFAULT_IP_ADDRESS;
       try {
@@ -431,9 +430,7 @@ public class NsiliEndpoint implements CorbaServiceListener, QuerySources {
         LOGGER.info("Could not get IP address for localhost", e);
       }
 
-      String guestTokenId = ip;
-      GuestAuthenticationToken guestToken = new GuestAuthenticationToken(guestTokenId);
-      guestSubject = securityManager.getSubject(guestToken);
+      guestSubject = Security.getInstance().getGuestSubject(ip);
     }
 
     return guestSubject;
